@@ -4,6 +4,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './modules/users/user.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { AssetTypeModule } from './modules/assetTypes/assetType.module';
+import { AssetModule } from './modules/assets/asset.module';
 
 @Module({
   imports: [
@@ -22,6 +25,9 @@ import { UserModule } from './modules/users/user.module';
       autoLoadEntities: true, // Tự động load entities từ modules
     }),
     UserModule,
+    AuthModule,
+    AssetTypeModule,
+    AssetModule,
   ],
   controllers: [AppController],
   providers: [AppService],

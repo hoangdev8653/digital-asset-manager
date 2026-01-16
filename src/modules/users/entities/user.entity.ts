@@ -1,10 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-// import { Asset } from '../assets/asset.entity'; // Giả sử có entity Asset
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+// import { Assignment } from '../../assignments/entities/assignment.entity';
 
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column()
   name: string;
@@ -12,10 +12,24 @@ export class User {
   @Column()
   email: string;
 
-  @Column({ nullable: true })
-  age?: number;
+  @Column()
+  password: string;
 
-  // Ví dụ relationship: User có nhiều Assets
-  // @OneToMany(() => Asset, asset => asset.user)
-  // assets: Asset[];
+  @Column({
+    type: 'enum',
+    enum: ['ADMIN', 'EMPLOYEE'],
+    default: 'EMPLOYEE',
+  })
+  role: 'ADMIN' | 'EMPLOYEE';
+
+  @Column({
+    type: 'enum',
+    enum: ['ACTIVE', 'INACTIVE'],
+    default: 'ACTIVE',
+  })
+  status: 'ACTIVE' | 'INACTIVE';
+
+  // Relationship: User có nhiều Assignments
+  // @OneToMany(() => Assignment, (assignment) => assignment.user)
+  // assignments: Assignment[];
 }

@@ -12,9 +12,9 @@ import {
   RegisterDto,
   LoginDto,
   ResetPasswordDto,
+  ChangePasswordDto,
   // LockAccountDto,
 } from './auth.dto';
-import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class AuthService {

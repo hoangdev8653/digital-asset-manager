@@ -35,7 +35,7 @@ CREATE TABLE "assignments" (
   "status" varchar
 );
 
-CREATE TABLE "issue_reports" (
+CREATE TABLE "reports" (
   "id" integer PRIMARY KEY,
   "assignment_id" integer,
   "employee_id" integer,
@@ -66,8 +66,8 @@ ALTER TABLE "assignments" ADD FOREIGN KEY ("employee_id") REFERENCES "employees"
 
 ALTER TABLE "assignments" ADD FOREIGN KEY ("assigned_by") REFERENCES "employees" ("id");
 
-ALTER TABLE "issue_reports" ADD FOREIGN KEY ("assignment_id") REFERENCES "assignments" ("id");
+ALTER TABLE "reports" ADD FOREIGN KEY ("assignment_id") REFERENCES "assignments" ("id");
 
-ALTER TABLE "issue_reports" ADD FOREIGN KEY ("employee_id") REFERENCES "employees" ("id");
+ALTER TABLE "reports" ADD FOREIGN KEY ("employee_id") REFERENCES "employees" ("id");
 
 ALTER TABLE "notifications" ADD FOREIGN KEY ("employee_id") REFERENCES "employees" ("id");

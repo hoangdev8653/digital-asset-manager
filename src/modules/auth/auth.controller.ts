@@ -11,9 +11,13 @@ import {
 import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { User } from '../users/entities/user.entity';
-import { RegisterDto, LoginDto, ResetPasswordDto } from './auth.dto';
-import { ChangePasswordDto } from './dto/change-password.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import {
+  RegisterDto,
+  LoginDto,
+  ResetPasswordDto,
+  ChangePasswordDto,
+} from './auth.dto';
+import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {

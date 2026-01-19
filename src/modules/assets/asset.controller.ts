@@ -7,7 +7,7 @@ import {
   Delete,
   Param,
 } from '@nestjs/common';
-import { CreateAssetDto } from './asset.dto';
+import { CreateAssetDto, UpdateAssetDto } from './asset.dto';
 import { AssetService } from './asset.service';
 
 @Controller('assets')
@@ -40,7 +40,7 @@ export class AssetController {
   @Put(':id')
   async updateAsset(
     @Param('id') id: string,
-    @Body() updateAssetDto: CreateAssetDto,
+    @Body() updateAssetDto: UpdateAssetDto,
   ) {
     const asset = await this.assetService.updateAsset(id, updateAssetDto);
     return {

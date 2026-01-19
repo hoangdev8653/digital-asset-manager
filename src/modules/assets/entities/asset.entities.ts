@@ -5,8 +5,10 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { AssetType } from '../../assetTypes/entities/assetType.entities';
+import { Assignments } from '../../assignments/entities/assignment.entities';
 
 @Entity('assets')
 export class Asset {
@@ -34,4 +36,7 @@ export class Asset {
   @ManyToOne(() => AssetType, (assetType) => assetType.assets)
   @JoinColumn({ name: 'asset_type_id' })
   assetType: AssetType;
+
+  @OneToMany(() => Assignments, (assignment) => assignment.asset)
+  assignments: Assignments[];
 }

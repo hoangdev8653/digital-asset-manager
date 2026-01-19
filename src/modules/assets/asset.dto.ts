@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
 
 export class CreateAssetDto {
   @IsNotEmpty()
@@ -13,9 +13,9 @@ export class CreateAssetDto {
   @IsString()
   metadata?: Record<string, any>;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  status: string;
+  status: string = 'available';
 
   @IsNotEmpty()
   @IsString()

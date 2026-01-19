@@ -7,6 +7,9 @@ import { UserModule } from './modules/users/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AssetTypeModule } from './modules/assetTypes/assetType.module';
 import { AssetModule } from './modules/assets/asset.module';
+import { AssignmentModule } from './modules/assignments/assignment.module';
+import { NotificationModule } from './modules/notifications/notification.module';
+import { ReportModule } from './modules/reports/report.module';
 
 @Module({
   imports: [
@@ -22,12 +25,15 @@ import { AssetModule } from './modules/assets/asset.module';
       database: process.env.POSTGRES_DB,
       entities: [],
       synchronize: process.env.SYNCHRONIZE === 'true',
-      autoLoadEntities: true, // Tự động load entities từ modules
+      autoLoadEntities: true,
     }),
     UserModule,
     AuthModule,
     AssetTypeModule,
     AssetModule,
+    AssignmentModule,
+    NotificationModule,
+    ReportModule,
   ],
   controllers: [AppController],
   providers: [AppService],

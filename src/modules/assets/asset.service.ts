@@ -13,6 +13,17 @@ export class AssetService {
   async getAllAssets(): Promise<Asset[]> {
     const assets = await this.assetRepository.find({
       relations: ['assetType'],
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        expired_at: true,
+        metadata: true,
+        assetType: {
+          id: true,
+          name: true,
+        },
+      },
     });
     return assets;
   }
@@ -20,6 +31,17 @@ export class AssetService {
     const asset = await this.assetRepository.findOne({
       where: { id },
       relations: ['assetType'],
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        expired_at: true,
+        metadata: true,
+        assetType: {
+          id: true,
+          name: true,
+        },
+      },
     });
     return asset;
   }
@@ -27,14 +49,17 @@ export class AssetService {
     const asset = this.assetRepository.create(createAssetDto);
     return await this.assetRepository.save(asset);
   }
-  async updateAsset(id: string, updateAsset: UpdateAssetDto): Promise<Asset> {
+  async updateAsset(
+    id: string,
+    updateAssetDto: UpdateAssetDto,
+  ): Promise<Asset> {
     const asset = await this.assetRepository.findOne({
       where: { id },
     });
     if (!asset) {
       throw new NotAcceptableException('Tài sản không tồn tại');
     }
-    const updatedAsset = Object.assign(asset, updateAsset);
+    const updatedAsset = Object.assign(asset, updateAssetDto);
     return await this.assetRepository.save(updatedAsset);
   }
   async deleteAsset(id: string): Promise<Asset> {

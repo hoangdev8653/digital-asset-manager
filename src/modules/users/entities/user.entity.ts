@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
-// import { Assignment } from '../../assignments/entities/assignment.entity';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Assignments } from '../../assignments/entities/assignment.entities';
+import { Notification } from '../../notifications/entities/notification.entities';
 
 @Entity('users')
 export class User {
@@ -30,6 +31,9 @@ export class User {
   status: 'ACTIVE' | 'INACTIVE';
 
   // Relationship: User có nhiều Assignments
-  // @OneToMany(() => Assignment, (assignment) => assignment.user)
-  // assignments: Assignment[];
+  @OneToMany(() => Assignments, (assignment) => assignment.employee)
+  assignments: Assignments[];
+
+  @OneToMany(() => Notification, (notification) => notification.user)
+  notifications: Notification[];
 }

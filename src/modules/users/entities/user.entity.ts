@@ -30,7 +30,6 @@ export class User {
   })
   status: 'ACTIVE' | 'INACTIVE';
 
-  // Relationship: User có nhiều Assignments
   @OneToMany(() => Assignments, (assignment) => assignment.employee)
   assignments: Assignments[];
 

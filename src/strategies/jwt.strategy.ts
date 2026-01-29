@@ -19,7 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET || 'your_jwt_secret_key',
+      secretOrKey: process.env.JWT_SECRET,
     });
   }
 
@@ -30,6 +30,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
-    return user; // Attach to req.user
+    return user;
   }
 }

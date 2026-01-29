@@ -1,4 +1,6 @@
 import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsInt, Min } from 'class-validator';
 
 export class CreateAssetDto {
   @IsNotEmpty()
@@ -34,7 +36,22 @@ export class UpdateAssetDto {
 
   @IsString()
   status?: string;
-
   @IsString()
+
   expired_at?: Date;
+}
+
+
+export class PaginationDto {
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  page?: number = 1;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  limit?: number = 10;
 }

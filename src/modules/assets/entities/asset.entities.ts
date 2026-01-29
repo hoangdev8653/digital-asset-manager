@@ -21,7 +21,7 @@ export class Asset {
   @Column({ type: 'json', nullable: true })
   metadata: Record<string, any>;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, default: 'available' })
   status: string | null;
 
   @Column({ nullable: true })

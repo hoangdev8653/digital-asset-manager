@@ -2,10 +2,7 @@ import { Injectable, NotAcceptableException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Notification } from './entities/notification.entities';
-import {
-  CreateNotificationDto,
-  UpdateNotificationDto,
-} from './notification.dto';
+import { CreateNotificationDto } from './notification.dto';
 
 @Injectable()
 export class NotificationService {
@@ -26,6 +23,15 @@ export class NotificationService {
     }
     return notification;
   }
+  async getNotificationByUser(id: string) {
+    const notification = await this.notificationRepository.find({
+      where: { userId: id },
+    });
+    if (notification.length === 0) {
+      throw new NotAcceptableException('Không có thông báo');
+    }
+    return notification;
+  }
   async createNotification(
     createNotificationDto: CreateNotificationDto,
   ): Promise<Notification> {
@@ -34,21 +40,15 @@ export class NotificationService {
     );
     return await this.notificationRepository.save(notification);
   }
-  async updateNotification(
-    id: string,
-    updateNotificationDto: UpdateNotificationDto,
-  ): Promise<Notification> {
+  async updateStatusNotification(id: string): Promise<Notification> {
     const notification = await this.notificationRepository.findOne({
       where: { id },
     });
     if (!notification) {
       throw new NotAcceptableException('Thông báo không tồn tại');
     }
-    const updatedNotification = Object.assign(
-      notification,
-      updateNotificationDto,
-    );
-    return await this.notificationRepository.save(updatedNotification);
+    notification.isRead = true;
+    return await this.notificationRepository.save(notification);
   }
   async deleleNotification(id: string): Promise<Notification> {
     const notification = await this.notificationRepository.findOne({

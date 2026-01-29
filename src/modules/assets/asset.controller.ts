@@ -6,19 +6,20 @@ import {
   Put,
   Delete,
   Param,
+  Query,
 } from '@nestjs/common';
-import { CreateAssetDto, UpdateAssetDto } from './asset.dto';
+import { CreateAssetDto, UpdateAssetDto, PaginationDto } from './asset.dto';
 import { AssetService } from './asset.service';
 
 @Controller('assets')
 export class AssetController {
-  constructor(private readonly assetService: AssetService) {}
+  constructor(private readonly assetService: AssetService) { }
   @Get()
-  async getAllAssets() {
-    const assets = await this.assetService.getAllAssets();
+  async getAllAssets(@Query() query: PaginationDto) {
+    const result = await this.assetService.getAllAssets(query);
     return {
       message: 'Lấy danh sách tài sản thành công',
-      data: assets,
+      ...result,
     };
   }
   @Get(':id')

@@ -44,7 +44,7 @@ export class AuthService {
 
   async login(
     loginDto: LoginDto,
-  ): Promise<{ access_token: string; refresh_token: string }> {
+  ): Promise<{ access_token: string; refresh_token: string; user: User }> {
     const { email, password } = loginDto;
 
     const user = await this.userRepository.findOne({ where: { email } });
@@ -60,7 +60,7 @@ export class AuthService {
     const access_token = this.jwtService.sign(payload);
     const refresh_token = this.jwtService.sign(payload, { expiresIn: '7d' });
 
-    return { access_token, refresh_token };
+    return { access_token, refresh_token, user };
   }
 
   async refresh(refresh_token: string): Promise<{ access_token: string }> {

@@ -1,9 +1,17 @@
 import { Injectable, NotAcceptableException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { Assignments } from './entities/assignment.entities';
-import { CreateAssignmentDto, UpdateAssignmentDto } from './assignment.dto';
+import {
+  CreateAssignmentDto,
+  UpdateAssignmentDto,
+  PaginationDto,
+} from './assignment.dto';
 import { Asset } from '../assets/entities/asset.entities';
+import { Notification } from '../notifications/entities/notification.entities';
+import { CreateNotificationDto } from '../notifications/notification.dto';
 
 @Injectable()
 export class AssignmentService {
@@ -12,9 +20,16 @@ export class AssignmentService {
     private assignmentsRepository: Repository<Assignments>,
     @InjectRepository(Asset)
     private assetRepository: Repository<Asset>,
+    @InjectRepository(Notification)
+    @InjectRepository(Notification)
+    private notificationRepository: Repository<Notification>,
+    @InjectQueue('notifications') private notificationsQueue: Queue,
   ) {}
-  async getAllAssignments(): Promise<Assignments[]> {
-    const assignments = await this.assignmentsRepository.find({
+  async getAllAssignments(paginationDto: PaginationDto) {
+    const page = Number(paginationDto.page) || 1;
+    const limit = Number(paginationDto.limit) || 10;
+    const skip = (page - 1) * limit;
+    const [data, total] = await this.assignmentsRepository.findAndCount({
       relations: ['asset', 'employee'],
       select: {
         id: true,
@@ -35,8 +50,16 @@ export class AssignmentService {
           role: true,
         },
       },
+      skip,
+      take: limit,
     });
-    return assignments;
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
   async getAssignment(id: string): Promise<Assignments> {
     const assignment = await this.assignmentsRepository.findOne({
@@ -112,6 +135,31 @@ export class AssignmentService {
     const assignment = this.assignmentsRepository.create(createAssignmentDto);
     const savedAssignment = await this.assignmentsRepository.save(assignment);
     await this.updateAssetStatus(asset_id, 'assigned');
+    await this.createNotification({
+      title: 'Cấp tài sản',
+      isRead: false,
+      type: 'Cấp tài sản',
+      message: `Bạn vừa được cấp tài sản: ${asset.title}`,
+      userId: createAssignmentDto.employee_id,
+    });
+
+    // Schedule expiry notification
+    const expiryDate = new Date(createAssignmentDto.expired_at);
+    const now = new Date();
+    const delay = expiryDate.getTime() - now.getTime();
+
+    if (delay > 0) {
+      await this.notificationsQueue.add(
+        'expiry-notification',
+        {
+          assignmentId: savedAssignment.id,
+          userId: createAssignmentDto.employee_id,
+          assetTitle: asset.title,
+        },
+        { delay },
+      );
+    }
+
     return savedAssignment;
   }
   async updateAssignment(
@@ -140,5 +188,13 @@ export class AssignmentService {
     status: string,
   ): Promise<void> {
     await this.assetRepository.update(assetId, { status });
+  }
+  private async createNotification(
+    createNotificationDto: CreateNotificationDto,
+  ): Promise<void> {
+    const notification = this.notificationRepository.create(
+      createNotificationDto,
+    );
+    await this.notificationRepository.save(notification);
   }
 }

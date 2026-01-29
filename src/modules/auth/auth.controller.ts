@@ -33,7 +33,7 @@ export class AuthController {
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const { access_token, refresh_token } =
+    const { access_token, refresh_token, user } =
       await this.authService.login(loginDto);
 
     response.cookie('refresh_token', refresh_token, {
@@ -43,7 +43,12 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return { message: 'Đăng nhập thành công', access_token, refresh_token };
+    return {
+      message: 'Đăng nhập thành công',
+      access_token,
+      refresh_token,
+      user,
+    };
   }
 
   @Post('logout')

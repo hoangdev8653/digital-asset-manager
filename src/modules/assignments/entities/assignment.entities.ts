@@ -46,8 +46,8 @@ export class Assignments {
   @Column({ nullable: true })
   expired_at: Date | null;
 
-  @Column({ nullable: true })
-  status: string | null;
+  @Column({ default: 'active' })
+  status: string;
 
   @OneToMany(() => Report, (report) => report.assignment)
   reports: Report[];

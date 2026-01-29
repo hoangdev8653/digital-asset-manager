@@ -1,4 +1,12 @@
-import { IsEnum, IsOptional, IsString, IsEmail } from 'class-validator';
+import {
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsEmail,
+  IsInt,
+  Min,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class UpdateUserDto {
   @IsOptional()
@@ -16,4 +24,18 @@ export class UpdateUserDto {
   @IsOptional()
   @IsEnum(['ACTIVE', 'INACTIVE'])
   status?: 'ACTIVE' | 'INACTIVE';
+}
+
+export class PaginationDto {
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  page?: number = 1;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  limit?: number = 10;
 }

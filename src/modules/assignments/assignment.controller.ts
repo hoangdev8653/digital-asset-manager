@@ -8,20 +8,25 @@ import {
   Param,
   Request,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { AssignmentService } from './assignment.service';
-import { CreateAssignmentDto, UpdateAssignmentDto } from './assignment.dto';
+import {
+  CreateAssignmentDto,
+  UpdateAssignmentDto,
+  PaginationDto,
+} from './assignment.dto';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 
 @Controller('assignments')
 export class AssignmentController {
   constructor(private readonly assignmentService: AssignmentService) {}
   @Get()
-  async getAllAssignments() {
-    const assignments = await this.assignmentService.getAllAssignments();
+  async getAllAssignments(@Query() query: PaginationDto) {
+    const result = await this.assignmentService.getAllAssignments(query);
     return {
-      message: 'Lấy danh sách bài tập thành công',
-      data: assignments,
+      message: 'Lấy danh sách tài sản được giao thành công',
+      ...result,
     };
   }
   @Get('me')
@@ -39,7 +44,7 @@ export class AssignmentController {
   async getAssignment(@Param('id') id: string) {
     const assignment = await this.assignmentService.getAssignment(id);
     return {
-      message: 'Lấy bài tập thành công',
+      message: 'Lấy thông tin tài sản được giao thành công',
       data: assignment,
     };
   }
@@ -53,7 +58,7 @@ export class AssignmentController {
     const assignment =
       await this.assignmentService.createAssignment(createAssignmentDto);
     return {
-      message: 'Tạo bài tập thành công',
+      message: 'Cấp tài sản thành công',
       data: assignment,
     };
   }
@@ -67,7 +72,7 @@ export class AssignmentController {
       updateAssignmentDto,
     );
     return {
-      message: 'Cập nhật bài tập thành công',
+      message: 'Cập nhật thông tin tài sản thành công',
       data: assignment,
     };
   }
@@ -75,7 +80,7 @@ export class AssignmentController {
   async deleteAssignment(@Param('id') id: string) {
     const assignment = await this.assignmentService.deleteAssignment(id);
     return {
-      message: 'Xóa bài tập thành công',
+      message: 'Xóa thông tin tài sản thành công',
       data: assignment,
     };
   }

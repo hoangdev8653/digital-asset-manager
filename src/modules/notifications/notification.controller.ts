@@ -3,15 +3,15 @@ import {
   Get,
   Post,
   Body,
-  Put,
   Delete,
   Param,
+  Request,
+  UseGuards,
+  Patch,
 } from '@nestjs/common';
 import { NotificationService } from './notification.service';
-import {
-  CreateNotificationDto,
-  UpdateNotificationDto,
-} from './notification.dto';
+import { CreateNotificationDto } from './notification.dto';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
 @Controller('notifications')
 export class NotificationController {
@@ -24,6 +24,17 @@ export class NotificationController {
       data: notifications,
     };
   }
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async getNotificationByUser(@Request() req: { user: { id: string } }) {
+    const userId = req.user.id;
+    const notifications =
+      await this.notificationService.getNotificationByUser(userId);
+    return {
+      message: 'Lấy Danh sách thông báo',
+      data: notifications,
+    };
+  }
   @Get(':id')
   async getNotification(@Param('id') id: string) {
     const notification = await this.notificationService.getNotification(id);
@@ -32,6 +43,7 @@ export class NotificationController {
       data: notification,
     };
   }
+
   @Post('')
   async createNotification(
     @Body() createNotificationDto: CreateNotificationDto,
@@ -44,15 +56,11 @@ export class NotificationController {
       data: notification,
     };
   }
-  @Put(':id')
-  async updateNotification(
-    @Param('id') id: string,
-    @Body() updateNotificationDto: UpdateNotificationDto,
-  ) {
-    const notification = await this.notificationService.updateNotification(
-      id,
-      updateNotificationDto,
-    );
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  async updateStatusNotification(@Param('id') id: string) {
+    const notification =
+      await this.notificationService.updateStatusNotification(id);
     return {
       message: 'Cập nhật thông báo thành công',
       data: notification,

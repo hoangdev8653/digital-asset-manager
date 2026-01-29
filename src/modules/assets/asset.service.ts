@@ -1,7 +1,7 @@
 import { Injectable, NotAcceptableException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateAssetDto, UpdateAssetDto } from './asset.dto';
+import { CreateAssetDto, UpdateAssetDto, PaginationDto } from './asset.dto';
 import { Asset } from './entities/asset.entities';
 
 @Injectable()
@@ -10,8 +10,12 @@ export class AssetService {
     @InjectRepository(Asset)
     private assetRepository: Repository<Asset>,
   ) {}
-  async getAllAssets(): Promise<Asset[]> {
-    const assets = await this.assetRepository.find({
+  async getAllAssets(paginationDto: PaginationDto) {
+    const page = Number(paginationDto.page) || 1;
+    const limit = Number(paginationDto.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.assetRepository.findAndCount({
       relations: ['assetType'],
       select: {
         id: true,
@@ -24,8 +28,17 @@ export class AssetService {
           name: true,
         },
       },
+      skip,
+      take: limit,
     });
-    return assets;
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
   async getAsset(id: string): Promise<Asset> {
     const asset = await this.assetRepository.findOne({

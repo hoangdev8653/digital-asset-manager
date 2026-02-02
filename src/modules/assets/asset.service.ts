@@ -1,15 +1,20 @@
 import { Injectable, NotAcceptableException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { CreateAssetDto, UpdateAssetDto, PaginationDto } from './asset.dto';
 import { Asset } from './entities/asset.entities';
+import { SystemLogService } from '../systemLog/systemLog.service';
 
 @Injectable()
 export class AssetService {
   constructor(
     @InjectRepository(Asset)
     private assetRepository: Repository<Asset>,
-  ) {}
+    private readonly systemLogService: SystemLogService,
+    @InjectQueue('processing') private processingQueue: Queue,
+  ) { }
   async getAllAssets(paginationDto: PaginationDto) {
     const page = Number(paginationDto.page) || 1;
     const limit = Number(paginationDto.limit) || 10;
@@ -60,7 +65,16 @@ export class AssetService {
   }
   async createAsset(createAssetDto: CreateAssetDto): Promise<Asset> {
     const asset = this.assetRepository.create(createAssetDto);
-    return await this.assetRepository.save(asset);
+    const savedAsset = await this.assetRepository.save(asset);
+
+    await this.systemLogService.createSystemLog({
+      action: 'CREATE_ASSET',
+      targetId: savedAsset.id,
+      targetType: 'ASSET',
+      details: { description: `Tạo mới tài sản: ${savedAsset.title}` },
+    });
+
+    return savedAsset;
   }
   async updateAsset(
     id: string,
@@ -73,7 +87,16 @@ export class AssetService {
       throw new NotAcceptableException('Tài sản không tồn tại');
     }
     const updatedAsset = Object.assign(asset, updateAssetDto);
-    return await this.assetRepository.save(updatedAsset);
+    const savedAsset = await this.assetRepository.save(updatedAsset);
+
+    await this.systemLogService.createSystemLog({
+      action: 'UPDATE_ASSET',
+      targetId: savedAsset.id,
+      targetType: 'ASSET',
+      details: { description: `Cập nhật tài sản: ${savedAsset.title}`, changes: updateAssetDto },
+    });
+
+    return savedAsset;
   }
   async deleteAsset(id: string): Promise<Asset> {
     const asset = await this.assetRepository.findOne({
@@ -82,6 +105,28 @@ export class AssetService {
     if (!asset) {
       throw new NotAcceptableException('Tài sản không tồn tại');
     }
-    return await this.assetRepository.remove(asset);
+    const deletedAsset = await this.assetRepository.remove(asset);
+
+    await this.systemLogService.createSystemLog({
+      action: 'DELETE_ASSET',
+      targetId: id,
+      targetType: 'ASSET',
+      details: { description: `Xóa tài sản: ${asset.title}` },
+    });
+
+    return deletedAsset;
+  }
+
+
+  async importAssets(file: any, userId: string) {
+    if (!file) {
+      throw new NotAcceptableException('File is required');
+    }
+    console.log(file);
+    await this.processingQueue.add('import-assets', {
+      fileBuffer: file.buffer,
+      userId,
+    });
+    return { message: 'File uploaded and processing started.' };
   }
 }

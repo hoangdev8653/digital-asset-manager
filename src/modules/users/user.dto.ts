@@ -7,6 +7,7 @@ import {
   Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { UserStatus } from '../../common/enums/status.enum';
 
 export class UpdateUserDto {
   @IsOptional()
@@ -22,8 +23,8 @@ export class UpdateUserDto {
   role?: 'ADMIN' | 'EMPLOYEE';
 
   @IsOptional()
-  @IsEnum(['ACTIVE', 'INACTIVE'])
-  status?: 'ACTIVE' | 'INACTIVE';
+  @IsEnum(UserStatus)
+  status?: UserStatus;
 }
 
 export class PaginationDto {

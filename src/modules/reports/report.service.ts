@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateReportDto, UpdateReportDto } from './report.dto';
 import { Report } from './entities/report.entities';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { SystemLogService } from '../systemLog/systemLog.service';
 
 @Injectable()
 export class ReportService {
@@ -11,7 +12,8 @@ export class ReportService {
     @InjectRepository(Report)
     private reportRepository: Repository<Report>,
     private cloudinaryService: CloudinaryService,
-  ) {}
+    private readonly systemLogService: SystemLogService,
+  ) { }
   async getAllReports(): Promise<Report[]> {
     const reports = await this.reportRepository.find({});
     return reports;
@@ -40,7 +42,16 @@ export class ReportService {
       createReportDto.image_url = result.secure_url;
     }
     const report = this.reportRepository.create(createReportDto);
-    return await this.reportRepository.save(report);
+    const savedReport = await this.reportRepository.save(report);
+
+    await this.systemLogService.createSystemLog({
+      action: 'CREATE_REPORT',
+      targetId: savedReport.id,
+      targetType: 'REPORT',
+      details: "Tạo mới báo cáo",
+    });
+
+    return savedReport;
   }
   async updateReport(
     id: string,
@@ -51,7 +62,16 @@ export class ReportService {
       throw new NotAcceptableException('Báo cáo không tồn tại');
     }
     const updatedReport = Object.assign(report, updateReportDto);
-    return await this.reportRepository.save(updatedReport);
+    const savedReport = await this.reportRepository.save(updatedReport);
+
+    await this.systemLogService.createSystemLog({
+      action: 'UPDATE_REPORT',
+      targetId: savedReport.id,
+      targetType: 'REPORT',
+      details: "Cập nhật báo cáo",
+    });
+
+    return savedReport;
   }
   async deleteReport(id: string): Promise<Report> {
     const report = await this.reportRepository.findOne({ where: { id } });

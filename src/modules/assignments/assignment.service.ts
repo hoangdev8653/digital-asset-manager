@@ -12,6 +12,8 @@ import {
 import { Asset } from '../assets/entities/asset.entities';
 import { Notification } from '../notifications/entities/notification.entities';
 import { CreateNotificationDto } from '../notifications/notification.dto';
+import { SystemLogService } from '../systemLog/systemLog.service';
+import { AssetStatus, AssignmentStatus } from '../../common/enums/status.enum';
 
 @Injectable()
 export class AssignmentService {
@@ -24,7 +26,8 @@ export class AssignmentService {
     @InjectRepository(Notification)
     private notificationRepository: Repository<Notification>,
     @InjectQueue('notifications') private notificationsQueue: Queue,
-  ) {}
+    private readonly systemLogService: SystemLogService,
+  ) { }
   async getAllAssignments(paginationDto: PaginationDto) {
     const page = Number(paginationDto.page) || 1;
     const limit = Number(paginationDto.limit) || 10;
@@ -126,7 +129,7 @@ export class AssignmentService {
     if (!asset) {
       throw new NotAcceptableException('Tài sản không tồn tại');
     }
-    if (asset.status !== 'available') {
+    if (asset.status !== AssetStatus.AVAILABLE) {
       throw new NotAcceptableException(
         'Tài sản này không khả dụng (đã được giao hoặc hỏng)',
       );
@@ -134,31 +137,44 @@ export class AssignmentService {
 
     const assignment = this.assignmentsRepository.create(createAssignmentDto);
     const savedAssignment = await this.assignmentsRepository.save(assignment);
-    await this.updateAssetStatus(asset_id, 'assigned');
-    await this.createNotification({
-      title: 'Cấp tài sản',
-      isRead: false,
-      type: 'Cấp tài sản',
-      message: `Bạn vừa được cấp tài sản: ${asset.title}`,
+    await this.updateAssetStatus(asset_id, AssetStatus.ASSIGNED);
+
+    await this.notificationsQueue.add('new-assignment', {
+      assignmentId: savedAssignment.id,
       userId: createAssignmentDto.employee_id,
+      assetTitle: asset.title,
     });
 
-    // Schedule expiry notification
-    const expiryDate = new Date(createAssignmentDto.expired_at);
-    const now = new Date();
-    const delay = expiryDate.getTime() - now.getTime();
+    await this.systemLogService.createSystemLog({
+      action: 'CREATE_ASSIGNMENT',
+      targetId: savedAssignment.id,
+      targetType: 'ASSIGNMENT',
+      details: { description: `Cấp phát tài sản: ${asset.title}` },
+    });
 
-    if (delay > 0) {
-      await this.notificationsQueue.add(
-        'expiry-notification',
-        {
-          assignmentId: savedAssignment.id,
-          userId: createAssignmentDto.employee_id,
-          assetTitle: asset.title,
-        },
-        { delay },
-      );
+    // Schedule expiry notification (7 days before)
+    const expiryDate = new Date(createAssignmentDto.expired_at);
+    const alertDate = new Date(expiryDate);
+    alertDate.setDate(alertDate.getDate() - 7); // 7 days before
+
+    const now = new Date();
+    let delay = alertDate.getTime() - now.getTime();
+
+    // If less than 7 days remaining, schedule immediately (or small delay)
+    if (delay < 0) {
+      delay = 1000 * 60; // 1 minute delay if already entering warning period
     }
+
+    await this.notificationsQueue.add(
+      'expiry-notification',
+      {
+        assignmentId: savedAssignment.id,
+        userId: createAssignmentDto.employee_id,
+        assetTitle: asset.title,
+        expiredAt: expiryDate.toISOString(),
+      },
+      { delay },
+    );
 
     return savedAssignment;
   }
@@ -166,35 +182,76 @@ export class AssignmentService {
     id: string,
     updateAssignmentDto: UpdateAssignmentDto,
   ): Promise<Assignments> {
-    const assignment = await this.assignmentsRepository.findOneBy({ id });
-    if (!assignment) {
-      throw new NotAcceptableException('Assignment not found');
-    }
-    await this.assignmentsRepository.update(id, updateAssignmentDto);
-    return await this.getAssignment(id);
-  }
-  async deleteAssignment(id: string): Promise<Assignments> {
     const assignment = await this.assignmentsRepository.findOne({
       where: { id },
+      relations: ['asset'], // Load asset to get title for log if needed, or just log ID
     });
     if (!assignment) {
       throw new NotAcceptableException('Assignment not found');
     }
-    return await this.assignmentsRepository.remove(assignment);
+    await this.assignmentsRepository.update(id, updateAssignmentDto);
+
+    await this.systemLogService.createSystemLog({
+      action: 'UPDATE_ASSIGNMENT',
+      targetId: id,
+      targetType: 'ASSIGNMENT',
+      details: { description: `Cập nhật lượt cấp phát: ${assignment.asset?.title || id}`, changes: updateAssignmentDto },
+    });
+
+    return await this.getAssignment(id);
+  }
+
+  async returnAssignment(id: string): Promise<Assignments> {
+    const assignment = await this.assignmentsRepository.findOne({
+      where: { id },
+      relations: ['asset'],
+    });
+    if (!assignment) {
+      throw new NotAcceptableException('Assignment not found');
+    }
+    await this.assignmentsRepository.update(id, { status: AssignmentStatus.RETURNED, expired_at: new Date() });
+    await this.assetRepository.update(assignment.asset_id, { status: AssetStatus.AVAILABLE });
+
+    await this.notificationsQueue.add('return-assignment', {
+      assignmentId: assignment.id,
+      userId: assignment.employee_id,
+      assetTitle: assignment.asset?.title,
+    });
+
+    await this.systemLogService.createSystemLog({
+      action: 'RETURN_ASSIGNMENT',
+      targetId: id,
+      targetType: 'ASSIGNMENT',
+      details: { description: `Thu hồi tài sản: ${assignment.asset?.title || id}` },
+    });
+    return await this.getAssignment(id);
+  }
+
+  async deleteAssignment(id: string): Promise<Assignments> {
+    const assignment = await this.assignmentsRepository.findOne({
+      where: { id },
+      relations: ['asset'],
+    });
+    if (!assignment) {
+      throw new NotAcceptableException('Assignment not found');
+    }
+    const deletedAssignment = await this.assignmentsRepository.remove(assignment);
+
+    await this.systemLogService.createSystemLog({
+      action: 'DELETE_ASSIGNMENT',
+      targetId: id,
+      targetType: 'ASSIGNMENT',
+      details: { description: `Thu hồi/Xóa lượt cấp phát tài sản: ${assignment.asset?.title}` },
+    });
+
+    return deletedAssignment;
   }
 
   private async updateAssetStatus(
     assetId: string,
-    status: string,
+    status: AssetStatus,
   ): Promise<void> {
     await this.assetRepository.update(assetId, { status });
   }
-  private async createNotification(
-    createNotificationDto: CreateNotificationDto,
-  ): Promise<void> {
-    const notification = this.notificationRepository.create(
-      createNotificationDto,
-    );
-    await this.notificationRepository.save(notification);
-  }
+
 }

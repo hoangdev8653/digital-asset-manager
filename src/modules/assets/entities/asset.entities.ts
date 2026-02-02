@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { AssetType } from '../../assetTypes/entities/assetType.entities';
 import { Assignments } from '../../assignments/entities/assignment.entities';
+import { AssetStatus } from '../../../common/enums/status.enum';
 
 @Entity('assets')
 export class Asset {
@@ -21,8 +22,12 @@ export class Asset {
   @Column({ type: 'json', nullable: true })
   metadata: Record<string, any>;
 
-  @Column({ nullable: true, default: 'available' })
-  status: string | null;
+  @Column({
+    type: 'enum',
+    enum: AssetStatus,
+    default: AssetStatus.AVAILABLE,
+  })
+  status: AssetStatus;
 
   @Column({ nullable: true })
   expired_at: Date | null;

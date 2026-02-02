@@ -21,7 +21,7 @@ import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {
@@ -35,7 +35,6 @@ export class AuthController {
   ) {
     const { access_token, refresh_token, user } =
       await this.authService.login(loginDto);
-
     response.cookie('refresh_token', refresh_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

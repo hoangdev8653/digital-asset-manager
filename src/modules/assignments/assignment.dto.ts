@@ -1,17 +1,18 @@
-import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsUUID, IsDateString, IsEnum } from 'class-validator';
+import { AssignmentStatus } from '../../common/enums/status.enum';
 import { Type } from 'class-transformer';
 import { IsInt, Min } from 'class-validator';
 export class CreateAssignmentDto {
   @IsNotEmpty()
-  @IsString()
+  @IsUUID()
   asset_id: string;
 
   @IsNotEmpty()
-  @IsString()
+  @IsUUID()
   employee_id: string;
 
   @IsOptional()
-  @IsString()
+  @IsUUID()
   assigned_by: string;
 
   @IsNotEmpty()
@@ -19,31 +20,38 @@ export class CreateAssignmentDto {
   note: string;
 
   @IsNotEmpty()
-  @IsString()
+  @IsDateString()
   expired_at: Date;
 }
 
 export class UpdateAssignmentDto {
-  @IsString()
+  @IsOptional()
+  @IsUUID()
   asset_id?: string;
 
-  @IsString()
+  @IsOptional()
+  @IsUUID()
   employee_id?: string;
 
-  @IsString()
+  @IsOptional()
+  @IsUUID()
   assigned_by?: string;
 
-  @IsString()
+  @IsOptional()
+  @IsDateString()
   assigned_at?: Date;
 
+  @IsOptional()
   @IsString()
   note?: string;
 
-  @IsString()
+  @IsOptional()
+  @IsDateString()
   expired_at?: Date;
 
-  @IsString()
-  status?: string;
+  @IsOptional()
+  @IsEnum(AssignmentStatus)
+  status?: AssignmentStatus;
 }
 
 export class PaginationDto {

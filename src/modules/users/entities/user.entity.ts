@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Assignments } from '../../assignments/entities/assignment.entities';
 import { Notification } from '../../notifications/entities/notification.entities';
+import { UserStatus } from '../../../common/enums/status.enum';
 
 @Entity('users')
 export class User {
@@ -25,10 +26,10 @@ export class User {
 
   @Column({
     type: 'enum',
-    enum: ['ACTIVE', 'INACTIVE'],
-    default: 'ACTIVE',
+    enum: UserStatus,
+    default: UserStatus.ACTIVE,
   })
-  status: 'ACTIVE' | 'INACTIVE';
+  status: UserStatus;
 
   @OneToMany(() => Assignments, (assignment) => assignment.employee)
   assignments: Assignments[];

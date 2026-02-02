@@ -12,8 +12,7 @@ import { AssetModule } from './modules/assets/asset.module';
 import { AssignmentModule } from './modules/assignments/assignment.module';
 import { NotificationModule } from './modules/notifications/notification.module';
 import { ReportModule } from './modules/reports/report.module';
-import { SystemLogModule } from './modules/systemLog/systemLog.module';
-import { WorkerModule } from './modules/worker/worker.module';
+import { ProcessorModule } from './modules/processor/processor.module';
 import { redisConfig } from "./config/redis.config"
 import { typeOrmConfig } from "./config/database.config"
 import { bullBoardConfig } from "./config/bull-board.config"
@@ -33,8 +32,7 @@ import { bullBoardConfig } from "./config/bull-board.config"
     AssignmentModule,
     NotificationModule,
     ReportModule,
-    SystemLogModule,
-    WorkerModule,
+    ProcessorModule,
   ],
   controllers: [AppController],
   providers: [AppService],

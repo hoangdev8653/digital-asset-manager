@@ -5,12 +5,11 @@ import { AssetTypeController } from './assetType.controller';
 import { AssetTypeService } from './assetType.service';
 import { AuthModule } from '../auth/auth.module';
 import { Asset } from '../assets/entities/asset.entities';
-import { SystemLogModule } from '../systemLog/systemLog.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Asset, AssetType]), AuthModule, SystemLogModule],
+  imports: [TypeOrmModule.forFeature([Asset, AssetType]), AuthModule],
   controllers: [AssetTypeController],
   providers: [AssetTypeService],
   exports: [AssetTypeService],
 })
-export class AssetTypeModule { }
+export class AssetTypeModule {}

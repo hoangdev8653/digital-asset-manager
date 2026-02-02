@@ -3,15 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateAssetTypeDto, UpdateAssetTypeDto } from './assetType.dto';
 import { AssetType } from './entities/assetType.entities';
-import { SystemLogService } from '../systemLog/systemLog.service';
 
 @Injectable()
 export class AssetTypeService {
   constructor(
     @InjectRepository(AssetType)
     private assetTypeRepository: Repository<AssetType>,
-    private readonly systemLogService: SystemLogService,
-  ) { }
+  ) {}
 
   async getAllAssetTypes(): Promise<AssetType[]> {
     const assetTypes = await this.assetTypeRepository.find();
@@ -32,16 +30,7 @@ export class AssetTypeService {
     createAssetTypeDto: CreateAssetTypeDto,
   ): Promise<AssetType> {
     const assetType = this.assetTypeRepository.create(createAssetTypeDto);
-    const savedAssetType = await this.assetTypeRepository.save(assetType);
-
-    await this.systemLogService.createSystemLog({
-      action: 'CREATE_ASSET_TYPE',
-      targetId: savedAssetType.id,
-      targetType: 'ASSET_TYPE',
-      details: { description: `Tạo mới loại tài sản: ${savedAssetType.name}` },
-    });
-
-    return savedAssetType;
+    return await this.assetTypeRepository.save(assetType);
   }
   async updateAssetType(
     id: string,
@@ -54,16 +43,7 @@ export class AssetTypeService {
       throw new NotFoundException('Loại tài sản không tồn tại');
     }
     const updatedAssetType = Object.assign(assetType, updateAssetTypeDto);
-    const savedAssetType = await this.assetTypeRepository.save(updatedAssetType);
-
-    await this.systemLogService.createSystemLog({
-      action: 'UPDATE_ASSET_TYPE',
-      targetId: savedAssetType.id,
-      targetType: 'ASSET_TYPE',
-      details: { description: `Cập nhật loại tài sản: ${savedAssetType.name}`, changes: updateAssetTypeDto },
-    });
-
-    return savedAssetType;
+    return await this.assetTypeRepository.save(updatedAssetType);
   }
   async deleteAssetType(id: string): Promise<AssetType> {
     const assetType = await this.assetTypeRepository.findOne({
@@ -72,15 +52,6 @@ export class AssetTypeService {
     if (!assetType) {
       throw new NotFoundException('Loại tài sản không tồn tại');
     }
-    const deletedAssetType = await this.assetTypeRepository.remove(assetType);
-
-    await this.systemLogService.createSystemLog({
-      action: 'DELETE_ASSET_TYPE',
-      targetId: id,
-      targetType: 'ASSET_TYPE',
-      details: { description: `Xóa loại tài sản: ${assetType.name}` },
-    });
-
-    return deletedAssetType;
+    return await this.assetTypeRepository.remove(assetType);
   }
 }

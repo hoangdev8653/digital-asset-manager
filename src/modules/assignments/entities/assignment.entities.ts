@@ -10,7 +10,6 @@ import {
 import { User } from '../../users/entities/user.entity';
 import { Asset } from '../../assets/entities/asset.entities';
 import { Report } from '../../reports/entities/report.entities';
-import { AssignmentStatus } from '../../../common/enums/status.enum';
 
 @Entity('assignments')
 export class Assignments {
@@ -47,12 +46,8 @@ export class Assignments {
   @Column({ nullable: true })
   expired_at: Date | null;
 
-  @Column({
-    type: 'enum',
-    enum: AssignmentStatus,
-    default: AssignmentStatus.ACTIVE,
-  })
-  status: AssignmentStatus;
+  @Column({ default: 'active' })
+  status: string;
 
   @OneToMany(() => Report, (report) => report.assignment)
   reports: Report[];

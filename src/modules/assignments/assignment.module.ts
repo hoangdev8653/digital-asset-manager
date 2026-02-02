@@ -6,21 +6,18 @@ import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { Assignments } from './entities/assignment.entities';
 import { AssignmentController } from './assignment.controller';
 import { AssignmentService } from './assignment.service';
+import { AssignmentProcessor } from './assignment.processor';
 import { AuthModule } from '../auth/auth.module';
 import { Asset } from '../assets/entities/asset.entities';
 import { User } from '../users/entities/user.entity';
 import { NotificationModule } from "../notifications/notification.module"
 import { Notification } from "../notifications/entities/notification.entities"
-import { SystemLogModule } from '../systemLog/systemLog.module';
-import { UserModule } from '../users/user.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Assignments, Asset, User, Notification]),
     AuthModule,
     NotificationModule,
-    SystemLogModule,
-    UserModule,
     BullModule.registerQueue({
       name: 'notifications',
     }),
@@ -30,7 +27,7 @@ import { UserModule } from '../users/user.module';
     }),
   ],
   controllers: [AssignmentController],
-  providers: [AssignmentService],
+  providers: [AssignmentService, AssignmentProcessor],
   exports: [AssignmentService],
 })
 export class AssignmentModule { }

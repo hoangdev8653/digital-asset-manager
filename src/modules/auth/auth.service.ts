@@ -13,9 +13,8 @@ import {
   LoginDto,
   ResetPasswordDto,
   ChangePasswordDto,
+  // LockAccountDto,
 } from './auth.dto';
-import { SystemLogService } from '../systemLog/systemLog.service';
-import { UserStatus } from '../../common/enums/status.enum';
 
 @Injectable()
 export class AuthService {
@@ -23,8 +22,7 @@ export class AuthService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private jwtService: JwtService,
-    private readonly systemLogService: SystemLogService,
-  ) { }
+  ) {}
 
   async register(registerDto: RegisterDto): Promise<User> {
     const { email, password, name } = registerDto;
@@ -41,14 +39,6 @@ export class AuthService {
       password: hashedPassword,
     });
     const data = await this.userRepository.save(user);
-
-    await this.systemLogService.createSystemLog({
-      action: 'REGISTER',
-      targetId: data.id,
-      targetType: 'USER',
-      details: { description: `Đăng ký tài khoản mới: ${data.email}` },
-    });
-
     return data;
   }
 
@@ -116,44 +106,14 @@ export class AuthService {
     const { newPassword } = resetPasswordDto;
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
     await this.userRepository.update(user.id, { password: hashedNewPassword });
-
-    await this.systemLogService.createSystemLog({
-      action: 'RESET_PASSWORD',
-      targetId: user.id,
-      targetType: 'USER',
-      details: { description: `Đặt lại mật khẩu cho tài khoản: ${user.email}` },
-    });
-
     return { message: 'Password reset successfully' };
   }
 
   async lockAccount(
     user: User,
+    // lockAccountDto: LockAccountDto,
   ): Promise<{ message: string }> {
-    await this.userRepository.update(user.id, { status: UserStatus.INACTIVE });
-
-    await this.systemLogService.createSystemLog({
-      action: 'LOCK_ACCOUNT',
-      targetId: user.id,
-      targetType: 'USER',
-      details: { email: user.email, reason: 'Action performed' },
-    });
-
+    await this.userRepository.update(user.id, { status: 'INACTIVE' });
     return { message: 'Account locked successfully' };
-  }
-
-  async unLockAccount(
-    user: User,
-  ): Promise<{ message: string }> {
-    await this.userRepository.update(user.id, { status: UserStatus.ACTIVE });
-
-    await this.systemLogService.createSystemLog({
-      action: 'UNLOCK_ACCOUNT',
-      targetId: user.id,
-      targetType: 'USER',
-      details: { email: user.email },
-    });
-
-    return { message: 'Account unlocked successfully' };
   }
 }

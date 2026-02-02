@@ -1,5 +1,4 @@
-import { IsNotEmpty, IsString, IsOptional, IsUUID, IsObject, IsEnum, IsDateString } from 'class-validator';
-import { AssetStatus } from '../../common/enums/status.enum';
+import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 import { IsInt, Min } from 'class-validator';
 
@@ -10,42 +9,35 @@ export class CreateAssetDto {
 
   @IsNotEmpty()
   @IsString()
-  @IsUUID()
   asset_type_id: string;
 
-  @IsOptional()
-  @IsObject()
+  @IsNotEmpty()
+  @IsString()
   metadata?: Record<string, any>;
 
   @IsOptional()
-  @IsEnum(AssetStatus)
-  status: AssetStatus = AssetStatus.AVAILABLE;
+  @IsString()
+  status: string = 'available';
 
   @IsNotEmpty()
-  @IsDateString()
+  @IsString()
   expired_at: Date;
 }
 
 export class UpdateAssetDto {
-  @IsOptional()
   @IsString()
   title?: string;
 
-  @IsOptional()
   @IsString()
-  @IsUUID()
   asset_type_id?: string;
 
-  @IsOptional()
-  @IsObject()
+  @IsString()
   metadata?: Record<string, any>;
 
-  @IsOptional()
-  @IsEnum(AssetStatus)
-  status?: AssetStatus;
+  @IsString()
+  status?: string;
+  @IsString()
 
-  @IsOptional()
-  @IsDateString()
   expired_at?: Date;
 }
 

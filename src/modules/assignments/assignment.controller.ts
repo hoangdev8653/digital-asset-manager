@@ -9,7 +9,6 @@ import {
   Request,
   UseGuards,
   Query,
-  Patch,
 } from '@nestjs/common';
 import { AssignmentService } from './assignment.service';
 import {
@@ -21,7 +20,7 @@ import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 
 @Controller('assignments')
 export class AssignmentController {
-  constructor(private readonly assignmentService: AssignmentService) { }
+  constructor(private readonly assignmentService: AssignmentService) {}
   @Get()
   async getAllAssignments(@Query() query: PaginationDto) {
     const result = await this.assignmentService.getAllAssignments(query);
@@ -77,16 +76,6 @@ export class AssignmentController {
       data: assignment,
     };
   }
-
-  @Patch(':id/return')
-  async returnAssignment(@Param('id') id: string) {
-    const assignment = await this.assignmentService.returnAssignment(id);
-    return {
-      message: 'Trả lại tài sản thành công',
-      data: assignment,
-    };
-  }
-
   @Delete(':id')
   async deleteAssignment(@Param('id') id: string) {
     const assignment = await this.assignmentService.deleteAssignment(id);

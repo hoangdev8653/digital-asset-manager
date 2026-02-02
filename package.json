@@ -28,10 +28,8 @@
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
     "@nestjs/jwt": "^11.0.2",
-    "@nestjs/mapped-types": "^2.1.0",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
-    "@nestjs/swagger": "^11.2.5",
     "@nestjs/typeorm": "^11.0.0",
     "bcrypt": "^6.0.0",
     "buffer-to-stream": "^1.0.0",
@@ -47,10 +45,8 @@
     "rxjs": "^7.8.1",
     "sqlite3": "^5.1.7",
     "streamifier": "^0.1.1",
-    "swagger-ui-express": "^5.0.1",
     "typeorm": "^0.3.28",
-    "uuid": "^13.0.0",
-    "xlsx": "^0.18.5"
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

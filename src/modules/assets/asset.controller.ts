@@ -7,15 +7,9 @@ import {
   Delete,
   Param,
   Query,
-  UseInterceptors,
-  UploadedFile,
-  Req,
-  UseGuards,
 } from '@nestjs/common';
 import { CreateAssetDto, UpdateAssetDto, PaginationDto } from './asset.dto';
 import { AssetService } from './asset.service';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
 @Controller('assets')
 export class AssetController {
@@ -43,13 +37,6 @@ export class AssetController {
       message: 'Tạo tài sản thành công',
       data: asset,
     };
-  }
-  @Post("import-file")
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(@UploadedFile() file: Express.Multer.File, @Req() req: { user: { id: string } }) {
-    const userId = req.user.id;
-    return await this.assetService.importAssets(file, userId);
   }
   @Put(':id')
   async updateAsset(

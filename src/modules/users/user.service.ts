@@ -3,16 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UpdateUserDto, PaginationDto } from './user.dto';
-import { SystemLogService } from '../systemLog/systemLog.service';
-import { UserStatus } from '../../common/enums/status.enum';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-    private readonly systemLogService: SystemLogService,
-  ) { }
+  ) {}
 
   async getAllUsers(paginationDto: PaginationDto) {
     const page = Number(paginationDto.page) || 1;
@@ -41,10 +38,6 @@ export class UserService {
     return user;
   }
 
-  async getAdmins(): Promise<User[]> {
-    return this.userRepository.find({ where: { role: 'ADMIN' } });
-  }
-
   async getUser(id: string): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id } });
     if (user) {
@@ -69,20 +62,11 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    if (user.status === UserStatus.INACTIVE) {
+    if (user.status === 'INACTIVE') {
       return user;
     }
-    const updatedUser = this.userRepository.merge(user, { status: UserStatus.INACTIVE });
-    const savedUser = await this.userRepository.save(updatedUser);
-
-    await this.systemLogService.createSystemLog({
-      action: 'LOCK_ACCOUNT',
-      targetId: savedUser.id,
-      targetType: 'USER',
-      details: { description: `Khóa tài khoản: ${savedUser.email}` },
-    });
-
-    return savedUser;
+    const updatedUser = this.userRepository.merge(user, { status: 'INACTIVE' });
+    return this.userRepository.save(updatedUser);
   }
 
   async unlockAccount(id: string): Promise<User> {
@@ -90,33 +74,17 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    if (user.status === UserStatus.ACTIVE) {
+    if (user.status === 'ACTIVE') {
       return user;
     }
-    const updatedUser = this.userRepository.merge(user, { status: UserStatus.ACTIVE });
-    const savedUser = await this.userRepository.save(updatedUser);
-
-    await this.systemLogService.createSystemLog({
-      action: 'UNLOCK_ACCOUNT',
-      targetId: savedUser.id,
-      targetType: 'USER',
-      details: { description: `Mở khóa tài khoản: ${savedUser.email}` },
-    });
-
-    return savedUser;
+    const updatedUser = this.userRepository.merge(user, { status: 'ACTIVE' });
+    return this.userRepository.save(updatedUser);
   }
 
   async deleteUser(id: string): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id } });
     if (user) {
       await this.userRepository.remove(user);
-
-      await this.systemLogService.createSystemLog({
-        action: 'DELETE_USER',
-        targetId: id,
-        targetType: 'USER',
-        details: { description: `Xóa tài khoản người dùng: ${user.email}` },
-      });
     }
     return user;
   }

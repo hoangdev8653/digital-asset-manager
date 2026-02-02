@@ -6,7 +6,6 @@ import { User } from '../users/entities/user.entity';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from '../../strategies/jwt.strategy';
-import { SystemLogModule } from '../systemLog/systemLog.module';
 
 @Module({
   imports: [
@@ -16,10 +15,9 @@ import { SystemLogModule } from '../systemLog/systemLog.module';
       secret: process.env.JWT_SECRET || 'your_jwt_secret_key',
       signOptions: { expiresIn: '3600s' },
     }),
-    SystemLogModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
   exports: [AuthService],
 })
-export class AuthModule { }
+export class AuthModule {}

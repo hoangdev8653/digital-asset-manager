@@ -9,6 +9,7 @@ import {
   Body,
   UseGuards,
   Query,
+  Request,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto, PaginationDto } from './user.dto';
@@ -18,7 +19,7 @@ import { Roles } from '../users/roles.decorator';
 
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
   @Get()
   async getAllUsers(@Query() query: PaginationDto) {
     const result = await this.userService.getAllUsers(query);
@@ -35,17 +36,6 @@ export class UserController {
     return {
       message: 'Lấy thông tin cá nhân thành công',
       data: user,
-    };
-  }
-
-  @Get('admins')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
-  async getAdmins() {
-    const admins = await this.userService.getAdmins();
-    return {
-      message: 'Lấy danh sách quản trị viên thành công',
-      data: admins,
     };
   }
   @Get(':id')

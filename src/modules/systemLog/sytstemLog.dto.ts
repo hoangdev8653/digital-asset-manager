@@ -1,39 +1,37 @@
-import { IsString, IsOptional, IsNotEmpty, IsUUID, IsJSON } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, IsUUID } from 'class-validator';
 import { PartialType } from '@nestjs/mapped-types';
 import { IsInt, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
-
 export class CreateSystemLogDto {
-    @IsString()
-    @IsNotEmpty()
-    action: string;
+  @IsString()
+  @IsNotEmpty()
+  action: string;
 
-    @IsUUID()
-    @IsOptional()
-    targetId?: string;
+  @IsUUID()
+  @IsOptional()
+  targetId?: string;
 
-    @IsString()
-    @IsNotEmpty()
-    targetType: string;
+  @IsString()
+  @IsNotEmpty()
+  targetType: string;
 
-    @IsOptional()
-    details?: any;
+  @IsOptional()
+  details?: any;
 }
 
-export class UpdateSystemLogDto extends PartialType(CreateSystemLogDto) { }
-
+export class UpdateSystemLogDto extends PartialType(CreateSystemLogDto) {}
 
 export class PaginationDto {
-    @IsOptional()
-    @IsInt()
-    @Min(1)
-    @Type(() => Number)
-    page?: number = 1;
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  page?: number = 1;
 
-    @IsOptional()
-    @IsInt()
-    @Min(1)
-    @Type(() => Number)
-    limit?: number = 10;
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  limit?: number = 10;
 }

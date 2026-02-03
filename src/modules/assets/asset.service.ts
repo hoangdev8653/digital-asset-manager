@@ -122,7 +122,6 @@ export class AssetService {
     if (!file) {
       throw new NotAcceptableException('File is required');
     }
-    console.log(file);
     await this.processingQueue.add('import-assets', {
       fileBuffer: file.buffer,
       userId,

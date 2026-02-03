@@ -13,7 +13,7 @@ export class ReportService {
     private reportRepository: Repository<Report>,
     private cloudinaryService: CloudinaryService,
     private readonly systemLogService: SystemLogService,
-  ) { }
+  ) {}
   async getAllReports(): Promise<Report[]> {
     const reports = await this.reportRepository.find({});
     return reports;
@@ -22,6 +22,8 @@ export class ReportService {
     const reports = await this.reportRepository.find({
       where: { employee_id: id },
     });
+    console.log(Array.isArray(reports));
+
     return reports;
   }
   async getReport(id: string): Promise<Report> {
@@ -48,7 +50,7 @@ export class ReportService {
       action: 'CREATE_REPORT',
       targetId: savedReport.id,
       targetType: 'REPORT',
-      details: "Tạo mới báo cáo",
+      details: 'Tạo mới báo cáo',
     });
 
     return savedReport;
@@ -68,7 +70,7 @@ export class ReportService {
       action: 'UPDATE_REPORT',
       targetId: savedReport.id,
       targetType: 'REPORT',
-      details: "Cập nhật báo cáo",
+      details: 'Cập nhật báo cáo',
     });
 
     return savedReport;

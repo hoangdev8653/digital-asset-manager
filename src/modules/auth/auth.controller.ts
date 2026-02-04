@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
-import { User } from '../users/entities/user.entity';
+import { User } from '../users/entities/user.entities';
 import {
   RegisterDto,
   LoginDto,

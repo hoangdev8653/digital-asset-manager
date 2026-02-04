@@ -7,7 +7,7 @@ import {
   OneToMany,
   CreateDateColumn,
 } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
+import { User } from '../../users/entities/user.entities';
 import { Asset } from '../../assets/entities/asset.entities';
 import { Report } from '../../reports/entities/report.entities';
 import { AssignmentStatus } from '../../../common/enums/status.enum';

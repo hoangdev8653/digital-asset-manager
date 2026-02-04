@@ -1,10 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
+import { Between, Repository } from 'typeorm';
+import { User } from './entities/user.entities';
 import { UpdateUserDto, PaginationDto } from './user.dto';
 import { SystemLogService } from '../systemLog/systemLog.service';
 import { UserStatus } from '../../common/enums/status.enum';
+import { GrowthStatistics, calculateGrowthRate, getMonthComparisonRanges } from "../../utils/statistics.util"
 
 @Injectable()
 export class UserService {
@@ -24,13 +25,27 @@ export class UserService {
       take: limit,
     });
     data.forEach((user: any) => delete user.password);
+
+    const { currentMonthStart, currentMonthEnd, lastMonthStart, lastMonthEnd } = getMonthComparisonRanges()
+    const currentMonth = await this.userRepository.count({
+      where: {
+        created_at: Between(currentMonthStart, currentMonthEnd)
+      },
+    })
+    const lastMonth = await this.userRepository.count({
+      where: {
+        created_at: Between(lastMonthStart, lastMonthEnd)
+      },
+    })
+    const growthRate = calculateGrowthRate(currentMonth, lastMonth)
     return {
       data,
       total,
       page,
       limit,
       totalPages: Math.ceil(total / limit),
-    };
+      growthRate,
+    }
   }
 
   async getProfile(userId: string): Promise<User> {

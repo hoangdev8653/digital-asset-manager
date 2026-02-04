@@ -22,10 +22,7 @@ export class UserController {
   @Get()
   async getAllUsers(@Query() query: PaginationDto) {
     const result = await this.userService.getAllUsers(query);
-    return {
-      message: 'Lấy danh sách người dùng thành công',
-      ...result,
-    };
+    return result;
   }
   @Get('me')
   @UseGuards(JwtAuthGuard)

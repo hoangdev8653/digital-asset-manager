@@ -1,4 +1,12 @@
-import { IsNotEmpty, IsString, IsOptional, IsUUID, IsObject, IsEnum, IsDateString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsUUID,
+  IsObject,
+  IsEnum,
+  IsDateString,
+} from 'class-validator';
 import { AssetStatus } from '../../common/enums/status.enum';
 import { Type } from 'class-transformer';
 import { IsInt, Min } from 'class-validator';
@@ -48,7 +56,6 @@ export class UpdateAssetDto {
   @IsDateString()
   expired_at?: Date;
 }
-
 
 export class PaginationDto {
   @IsOptional()

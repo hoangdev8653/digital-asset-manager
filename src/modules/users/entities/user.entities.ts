@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Assignments } from '../../assignments/entities/assignment.entities';
 import { Notification } from '../../notifications/entities/notification.entities';
 import { UserStatus } from '../../../common/enums/status.enum';
@@ -31,9 +31,17 @@ export class User {
   })
   status: UserStatus;
 
+
+
   @OneToMany(() => Assignments, (assignment) => assignment.employee)
   assignments: Assignments[];
 
   @OneToMany(() => Notification, (notification) => notification.user)
   notifications: Notification[];
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
 }

@@ -10,22 +10,23 @@ import {
   UseInterceptors,
   UploadedFile,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ReportService } from './report.service';
-import { CreateReportDto, UpdateReportDto } from './report.dto';
+import { CreateReportDto, UpdateReportDto, PaginationDto } from './report.dto';
 import type { Express } from 'express';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 
 @Controller('reports')
 export class ReportController {
-  constructor(private readonly reportService: ReportService) {}
+  constructor(private readonly reportService: ReportService) { }
   @Get()
-  async getAllReports() {
-    const reports = await this.reportService.getAllReports();
+  async getAllReports(@Query() paginationDto: PaginationDto) {
+    const results = await this.reportService.getAllReports(paginationDto);
     return {
       message: 'Lấy danh sách báo cáo',
-      data: reports,
+      ...results,
     };
   }
   @Get('me')

@@ -1,11 +1,12 @@
 import { Injectable, NotAcceptableException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Between } from 'typeorm';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { CreateAssetDto, UpdateAssetDto, PaginationDto } from './asset.dto';
 import { Asset } from './entities/asset.entities';
 import { SystemLogService } from '../systemLog/systemLog.service';
+import { calculateGrowthRate, getMonthComparisonRanges } from '../../utils/statistics.util';
 
 @Injectable()
 export class AssetService {
@@ -21,6 +22,7 @@ export class AssetService {
     const skip = (page - 1) * limit;
 
     const [data, total] = await this.assetRepository.findAndCount({
+      where: {},
       relations: ['assetType'],
       select: {
         id: true,
@@ -37,12 +39,33 @@ export class AssetService {
       take: limit,
     });
 
+    const { currentMonthStart, currentMonthEnd, lastMonthStart, lastMonthEnd } =
+      getMonthComparisonRanges();
+
+    const currentMonth = await this.assetRepository.count({
+      where: { created_at: Between(currentMonthStart, currentMonthEnd) },
+    });
+    const lastMonth = await this.assetRepository.count({
+      where: { created_at: Between(lastMonthStart, lastMonthEnd) },
+    });
+
+    const { formattedGrowthRate, isIncrease } = calculateGrowthRate(
+      currentMonth,
+      lastMonth,
+    );
+
     return {
       data,
       total,
       page,
       limit,
       totalPages: Math.ceil(total / limit),
+      statistics: {
+        currentMonth,
+        lastMonth,
+        growthRate: formattedGrowthRate,
+        isIncrease,
+      },
     };
   }
   async getAsset(id: string): Promise<Asset> {
@@ -93,7 +116,10 @@ export class AssetService {
       action: 'UPDATE_ASSET',
       targetId: savedAsset.id,
       targetType: 'ASSET',
-      details: { description: `Cập nhật tài sản: ${savedAsset.title}`, changes: updateAssetDto },
+      details: {
+        description: `Cập nhật tài sản: ${savedAsset.title}`,
+        changes: updateAssetDto,
+      },
     });
 
     return savedAsset;
@@ -116,7 +142,6 @@ export class AssetService {
 
     return deletedAsset;
   }
-
 
   async importAssets(file: any, userId: string) {
     if (!file) {

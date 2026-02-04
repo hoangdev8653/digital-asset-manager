@@ -8,7 +8,7 @@ import { AssignmentController } from './assignment.controller';
 import { AssignmentService } from './assignment.service';
 import { AuthModule } from '../auth/auth.module';
 import { Asset } from '../assets/entities/asset.entities';
-import { User } from '../users/entities/user.entity';
+import { User } from '../users/entities/user.entities';
 import { NotificationModule } from "../notifications/notification.module"
 import { Notification } from "../notifications/entities/notification.entities"
 import { SystemLogModule } from '../systemLog/systemLog.module';

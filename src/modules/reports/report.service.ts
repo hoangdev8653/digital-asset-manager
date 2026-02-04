@@ -1,10 +1,11 @@
 import { Injectable, NotAcceptableException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { CreateReportDto, UpdateReportDto } from './report.dto';
+import { Between, Repository } from 'typeorm';
+import { CreateReportDto, UpdateReportDto, PaginationDto } from './report.dto';
 import { Report } from './entities/report.entities';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { SystemLogService } from '../systemLog/systemLog.service';
+import { calculateGrowthRate, getMonthComparisonRanges } from '../../utils/statistics.util';
 
 @Injectable()
 export class ReportService {
@@ -13,16 +14,22 @@ export class ReportService {
     private reportRepository: Repository<Report>,
     private cloudinaryService: CloudinaryService,
     private readonly systemLogService: SystemLogService,
-  ) {}
-  async getAllReports(): Promise<Report[]> {
-    const reports = await this.reportRepository.find({});
-    return reports;
+  ) { }
+  async getAllReports(paginationDto: PaginationDto) {
+    const page = Number(paginationDto.page) || 1;
+    const limit = Number(paginationDto.limit) || 10;
+    const skip = (page - 1) * limit;
+    const [data, total] = await this.reportRepository.findAndCount({ where: {}, skip, take: limit });
+    const { currentMonthStart, currentMonthEnd, lastMonthStart, lastMonthEnd } = getMonthComparisonRanges()
+    const currentMonth = await this.reportRepository.count({ where: { created_at: Between(currentMonthStart, currentMonthEnd) } })
+    const lastMonth = await this.reportRepository.count({ where: { created_at: Between(lastMonthStart, lastMonthEnd) } })
+    const { formattedGrowthRate, isIncrease } = calculateGrowthRate(currentMonth, lastMonth)
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit), statistics: { currentMonth, lastMonth, growthRate: formattedGrowthRate, isIncrease } }
   }
   async getReportsByUser(id: string): Promise<Report[]> {
     const reports = await this.reportRepository.find({
       where: { employee_id: id },
     });
-    console.log(Array.isArray(reports));
 
     return reports;
   }
